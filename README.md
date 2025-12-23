@@ -1,110 +1,182 @@
-# FHEVM Hardhat Template
+# ZM Launch
 
-A Hardhat-based template for developing Fully Homomorphic Encryption (FHE) enabled Solidity smart contracts using the
-FHEVM protocol by Zama.
+A privacy-first meme token launchpad built on Zama FHEVM. Users can create ERC7984-based confidential tokens, free-mint them, and decrypt balances when they choose.
 
-## Quick Start
+## Project Overview
 
-For detailed instructions see:
-[FHEVM Hardhat Quick Start Tutorial](https://docs.zama.ai/protocol/solidity-guides/getting-started/quick-start-tutorial)
+ZM Launch focuses on one thing: making confidential meme tokens easy to create and easy to use while keeping balances private by default. The system combines a factory contract that deploys new ERC7984 tokens with a React frontend that lists all created tokens, supports free minting, and lets users decrypt balances on demand.
 
-### Prerequisites
+## Problems This Project Solves
 
-- **Node.js**: Version 20 or higher
-- **npm or yarn/pnpm**: Package manager
+- **Balance privacy**: Typical ERC20 balances are public. ZM Launch uses encrypted balances so holdings are private on-chain.
+- **Low-friction token creation**: Creating a meme token should not require custom deployment steps or bespoke tooling.
+- **Confidential minting UX**: Users need a clean way to mint, view, and decrypt balances without exposing on-chain data.
+- **Consistent deployment workflow**: Local testing, task execution, and Sepolia deployment are standardized.
 
-### Installation
+## Core Advantages
 
-1. **Install dependencies**
+- **FHE-native privacy**: Balances and minting flows rely on FHEVM-compatible encrypted types.
+- **Self-serve launches**: A factory contract deploys new tokens on demand with a simple input set.
+- **Free minting**: Users can mint tokens without paying a token price, keeping onboarding simple.
+- **Explicit decrypt flow**: Users opt-in to decrypt and view balances when they want to reveal them.
+- **Separation of concerns**: Contracts, tasks, deployment, and frontend are structured for clarity.
+- **No frontend envs**: The frontend avoids runtime environment variables for deterministic builds.
+
+## Feature Breakdown
+
+- **Token creation**: Users input name, symbol, and total supply (default 100,000,000).
+- **ERC7984 tokens**: Each token is a confidential ERC7984 contract based on `ConfidentialMeme.sol`.
+- **Factory deployment**: `ConfidentialMemeFactory.sol` deploys new tokens and tracks them.
+- **Token listing**: The frontend lists every created token for easy discovery.
+- **Free mint**: Users can mint without payment from the UI.
+- **Encrypted balances**: Balances are stored and retrieved in encrypted form.
+- **User-driven decryption**: Users can decrypt their balances explicitly in the UI.
+
+## User Journey
+
+1. Connect a wallet in the frontend.
+2. Enter token name, symbol, and total supply (default 100,000,000).
+3. Confirm the transaction to create the confidential token.
+4. See the new token appear in the list of all created tokens.
+5. Free-mint tokens to your address.
+6. View encrypted balances and decrypt them when needed.
+
+## Tech Stack
+
+- **Smart contracts**: Solidity + Hardhat + `@fhevm/solidity`
+- **Confidential tokens**: OpenZeppelin `ERC7984`
+- **Frontend**: React + Vite
+- **Wallet connection**: RainbowKit + wagmi
+- **On-chain read**: viem
+- **On-chain write**: ethers
+- **Relayer integration**: `@zama-fhe/relayer-sdk`
+
+## Repository Layout
+
+```
+contracts/               Confidential token and factory contracts
+deploy/                  Hardhat deploy scripts
+deployments/             Deployment artifacts (including Sepolia ABI JSON)
+tasks/                   Hardhat tasks
+test/                    Hardhat tests
+home/                    React frontend (Vite)
+```
+
+## Prerequisites
+
+- Node.js 20+
+- npm 7+
+- A wallet funded on Sepolia for deployment and testing
+
+## Setup
+
+1. Install root dependencies:
 
    ```bash
    npm install
    ```
 
-2. **Set up environment variables**
+2. Install frontend dependencies:
 
    ```bash
-   npx hardhat vars set MNEMONIC
-
-   # Set your Infura API key for network access
-   npx hardhat vars set INFURA_API_KEY
-
-   # Optional: Set Etherscan API key for contract verification
-   npx hardhat vars set ETHERSCAN_API_KEY
+   cd home
+   npm install
    ```
 
-3. **Compile and test**
+## Environment Configuration (Root)
 
-   ```bash
-   npm run compile
-   npm run test
-   ```
-
-4. **Deploy to local network**
-
-   ```bash
-   # Start a local FHEVM-ready node
-   npx hardhat node
-   # Deploy to local network
-   npx hardhat deploy --network localhost
-   ```
-
-5. **Deploy to Sepolia Testnet**
-
-   ```bash
-   # Deploy to Sepolia
-   npx hardhat deploy --network sepolia
-   # Verify contract on Etherscan
-   npx hardhat verify --network sepolia <CONTRACT_ADDRESS>
-   ```
-
-6. **Test on Sepolia Testnet**
-
-   ```bash
-   # Once deployed, you can run a simple test on Sepolia.
-   npx hardhat test --network sepolia
-   ```
-
-## 📁 Project Structure
+Create a `.env` file in the repository root with:
 
 ```
-fhevm-hardhat-template/
-├── contracts/           # Smart contract source files
-│   └── FHECounter.sol   # Example FHE counter contract
-├── deploy/              # Deployment scripts
-├── tasks/               # Hardhat custom tasks
-├── test/                # Test files
-├── hardhat.config.ts    # Hardhat configuration
-└── package.json         # Dependencies and scripts
+INFURA_API_KEY=your_infura_key
+PRIVATE_KEY=your_deployer_private_key
+# Optional
+ETHERSCAN_API_KEY=your_etherscan_key
 ```
 
-## 📜 Available Scripts
+Notes:
+- `PRIVATE_KEY` must be used for deployment. Do not use `MNEMONIC`.
+- The contracts load environment variables via `dotenv` in Hardhat config.
 
-| Script             | Description              |
-| ------------------ | ------------------------ |
-| `npm run compile`  | Compile all contracts    |
-| `npm run test`     | Run all tests            |
-| `npm run coverage` | Generate coverage report |
-| `npm run lint`     | Run linting checks       |
-| `npm run clean`    | Clean build artifacts    |
+## Build and Test
 
-## 📚 Documentation
+From the repository root:
 
-- [FHEVM Documentation](https://docs.zama.ai/fhevm)
-- [FHEVM Hardhat Setup Guide](https://docs.zama.ai/protocol/solidity-guides/getting-started/setup)
-- [FHEVM Testing Guide](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat/write_test)
-- [FHEVM Hardhat Plugin](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat)
+```bash
+npm run compile
+npm run test
+```
 
-## 📄 License
+## Local Development (Contracts Only)
 
-This project is licensed under the BSD-3-Clause-Clear License. See the [LICENSE](LICENSE) file for details.
+Start a local node and deploy contracts locally:
 
-## 🆘 Support
+```bash
+npm run chain
+npm run deploy:localhost
+```
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/zama-ai/fhevm/issues)
-- **Documentation**: [FHEVM Docs](https://docs.zama.ai)
-- **Community**: [Zama Discord](https://discord.gg/zama)
+The frontend intentionally targets public networks (no localhost usage).
 
----
+## Deploy to Sepolia
 
-**Built with ❤️ by the Zama team**
+After tasks and tests pass:
+
+```bash
+npm run deploy:sepolia
+npm run test:sepolia
+```
+
+Optional verification:
+
+```bash
+npm run verify:sepolia <CONTRACT_ADDRESS>
+```
+
+## Frontend Usage
+
+From `home/`:
+
+```bash
+npm run dev
+```
+
+Then:
+- Connect a wallet on Sepolia.
+- Create tokens, mint them, and decrypt balances from the UI.
+
+## ABI Sync Requirement
+
+The frontend must use the ABI generated by contract deployments. After deployment to Sepolia, copy the ABI from:
+
+- `deployments/sepolia/ConfidentialMeme.json`
+- `deployments/sepolia/ConfidentialMemeFactory.json`
+
+Paste those ABI arrays into the frontend files:
+
+- `home/src/abi/confidentialMemeAbi.ts`
+- `home/src/abi/confidentialMemeFactoryAbi.ts`
+
+Do not use JSON files in the frontend.
+
+## Security and Privacy Notes
+
+- Encrypted balances are stored on-chain; plaintext values are never published.
+- Decryption is a user-initiated action and should be treated as sensitive.
+- View functions accept explicit addresses rather than relying on `msg.sender`.
+- The frontend avoids local storage and environment variables to keep data handling explicit.
+
+## Future Roadmap
+
+- **Token metadata**: Optional icons and descriptions stored off-chain with integrity hashes.
+- **Batch minting**: Allow a single transaction to mint to multiple recipients.
+- **Confidential transfers**: Extend UI to cover private transfers beyond minting.
+- **Governance hooks**: Add configurable owner or community controls to factory rules.
+- **Analytics (privacy-first)**: Aggregate token activity without exposing balances.
+- **Relayer UX**: Improve status tracking and error messaging for decrypt operations.
+- **Multi-network expansion**: Add additional testnets once FHEVM support is available.
+- **Audit readiness**: Formalize security reviews and add invariant-style tests.
+
+## License
+
+BSD-3-Clause-Clear. See `LICENSE`.
